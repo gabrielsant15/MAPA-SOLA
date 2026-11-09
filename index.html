@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar 3D Interativo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        h1 { margin: 0; font-size: 18px; }
+        p { margin: 5px 0 0; font-size: 12px; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div id="info">
+        <h1>Sistema Solar 3D</h1>
+        <p>🖱️ Botão esquerdo: Girar câmera</p>
+        <p>🖱️ Botão direito / Shift: Arrastar</p>
+        <p>📜 Scroll do mouse: Zoom (Aproximar/Afastar)</p>
+    </div>
+
+    <!-- Importando Three.js e OrbitControls via CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com",
+                "three/addons/": "https://unpkg.com"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. Configuração da Cena, Câmera e Renderizador
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Controles de Interação (Zoom, Rotação, Pan)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Deixa o movimento suave
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 500;   // Limite do zoom para fora
+        controls.minDistance = 10;    // Limite do zoom para dentro
+
+        // 3. Iluminação
+        // Luz ambiente fraca para o lado escuro dos planetas não sumir totalmente
+        const ambientLight = new THREE.AmbientLight(0x333333);
+        scene.add(ambientLight);
+
+        // Luz do Sol (PointLight) que emite luz em todas as direções a partir do centro
+        const sunLight = new THREE.PointLight(0xffffff, 3, 300, 0.5);
+        scene.add(sunLight);
+
+        // 4. Criação do Sol (Centro do Sistema)
+        const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 }); // BasicMaterial não precisa de luz externa para brilhar
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        scene.add(sun);
+
+        // 5. Criação da Terra (Exemplo de Planeta)
+        const earthGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+        const earthMaterial = new THREE.MeshStandardMaterial({ color: 0x2233ff, roughness: 0.8 });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        
+        // Vamos criar um grupo para controlar a órbita da Terra facilmente
+        const earthOrbit = new THREE.Group();
+        scene.add(earthOrbit);
+        earthOrbit.add(earth);
+        
+        // Afastando a Terra do Sol
+        earth.position.x = 25;
+
+        // 6. Linha da Órbita da Terra
+        const orbitGeometry = new THREE.RingGeometry(24.9, 25.1, 64);
+        const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, side: THREE.DoubleSide });
+        const orbitLine = new THREE.Mesh(orbitGeometry, orbitMaterial);
+        orbitLine.rotation.x = Math.PI / 2; // Deita a linha na horizontal
+        scene.add(orbitLine);
+
+        // 7. Fundo Estrelado (Espaço)
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 2000;
+        const starPositions = new Float32Array(starsCount * 3);
+
+        for(let i = 0; i < starsCount * 3; i++) {
+            starPositions[i] = (Math.random() - 0.5) * 500;
+        }
+
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+        const starField = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starField);
+
+        // Posicionando a câmera inicial
+        camera.position.set(0, 30, 50);
+        controls.update();
+
+        // 8. Loop de Animação (Onde a mágica acontece)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotação do Sol e do planeta no próprio eixo
+            sun.rotation.y += 0.002;
+            earth.rotation.y += 0.01;
+
+            // Translação (Terra orbitando o Sol)
+            earthOrbit.rotation.y += 0.005;
+
+            // Atualiza os controles do mouse
+            controls.update();
+
+            renderer.render(scene, camera);
+        }
+
+        // Ajustar a tela caso o usuário mude o tamanho do navegador
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Inicia a animação
+        animate();
+    </script>
+</body>
+</html>
