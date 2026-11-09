@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar 3D Interativo PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        /* Custom scrollbar for menu */
+        #menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        #menu::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        #menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        #menu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <!-- Informações de Ajuda -->
+    <div id="info" class="absolute top-5 left-5 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-white/10 pointer-events-none shadow-2xl z-10 max-w-xs transition-all duration-300">
+        <h1 class="text-amber-400 font-bold text-lg mb-1 flex items-center gap-2">
+            <span>🌌</span> Sistema Solar 3D
+        </h1>
+        <p class="text-xs text-gray-300 leading-relaxed mb-1">🖱️ <b>Esquerdo:</b> Girar câmera</p>
+        <p class="text-xs text-gray-300 leading-relaxed mb-1">🖱️ <b>Direito / Shift:</b> Arrastar</p>
+        <p class="text-xs text-gray-300 leading-relaxed mb-1">📜 <b>Scroll:</b> Zoom aproximar/afastar</p>
+        <p class="text-xs text-amber-300/90 font-medium">✨ Clique em qualquer astro para focar</p>
+    </div>
+
+    <!-- Painel de Controle Lateral -->
+    <div id="menu" class="absolute top-5 right-5 bg-black/85 backdrop-blur-lg p-4 rounded-xl border border-white/15 flex flex-col gap-2 max-h-[85vh] overflow-y-auto z-20 shadow-2xl w-52">
+        <div class="text-white font-bold text-sm mb-1 pb-2 border-b border-white/10 text-center tracking-wider uppercase text-amber-400">
+            Navegar para
+        </div>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Sol')">
+            <span>☀️ Sol</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Estrela</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Mercúrio')">
+            <span>🪨 Mercúrio</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Roçoso</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Vênus')">
+            <span>🪐 Vênus</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Roçoso</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Terra')">
+            <span>🌍 Terra</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Nosso Lar</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Marte')">
+            <span>🔴 Marte</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Vermelho</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Júpiter')">
+            <span>🟠 Júpiter</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Gigante</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Saturno')">
+            <span>🟡 Saturno</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Anéis</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Urano')">
+            <span>🔵 Urano</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Gelo</span>
+        </button>
+        <button class="btn-planet bg-white/5 hover:bg-amber-400 hover:text-black text-gray-200 border border-white/10 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-left text-xs font-medium flex items-center justify-between group" onclick="focusOn('Netuno')">
+            <span>🔷 Netuno</span> <span class="text-[10px] text-gray-400 group-hover:text-black/70">Gelo</span>
+        </button>
+        <button class="btn-reset bg-red-950/80 hover:bg-red-800 text-red-200 border border-red-700/50 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 text-center text-xs font-bold mt-2 shadow-inner" onclick="focusOn('Geral')">
+            🌌 Visão Geral
+        </button>
+    </div>
+
+    <!-- Indicador de planeta focado (Tooltip flutuante) -->
+    <div id="focus-hud" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/75 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/20 text-sm font-semibold tracking-wide text-amber-300 pointer-events-none opacity-0 transition-opacity duration-300 shadow-2xl flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="hud-text">Focado em: Sol</span>
+    </div>
+
+    <!-- Importmap para Three.js e Addons -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. Configuração da Cena, Câmera e Renderizador
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Controles de Órbita
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 800;
+        controls.minDistance = 4;
+
+        // 3. Iluminação Espacial
+        const ambientLight = new THREE.AmbientLight(0x333333, 1.2);
+        scene.add(ambientLight);
+
+        // Sol atua como fonte de luz central intensa
+        const sunLight = new THREE.PointLight(0xfff5e6, 3.5, 1500, 0.1);
+        scene.add(sunLight);
+
+        // Luz de preenchimento suave para evitar sombras completamente negras no espaço
+        const fillLight = new THREE.DirectionalLight(0x223355, 0.4);
+        fillLight.position.set(0, 500, 500);
+        scene.add(fillLight);
+
+        // 4. Gerador de Texturas Procedurais Robustas (Garante 0% de erro 404 e funcionamento offline/GitHub Pages)
+        function createProceduralTexture(type, colorBase, colorDetail) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Fundo base
+            ctx.fillStyle = colorBase;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Geração de detalhes estilizados por tipo de astro
+            if (type === 'sun') {
+                const gradient = ctx.createRadialGradient(512, 256, 10, 512, 256, 500);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.2, '#ffcc00');
+                gradient.addColorStop(0.7, '#ff4400');
+                gradient.addColorStop(1, '#330000');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Manchas solares sutis
+                for(let i=0; i<40; i++) {
+                    ctx.fillStyle = 'rgba(100, 20, 0, 0.25)';
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*40+10, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            } else if (type === 'rocky' || type === 'mars') {
+                for (let i = 0; i < 800; i++) {
+                    ctx.fillStyle = Math.random() > 0.5 ? colorDetail : 'rgba(0,0,0,0.15)';
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 8 + 1, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (type === 'earth') {
+                // Oceanos já estão no base, adicionar continentes simulados
+                ctx.fillStyle = '#2d8a4e';
+                for (let i = 0; i < 35; i++) {
+                    ctx.beginPath();
+                    ctx.ellipse(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 120 + 40, Math.random() * 60 + 20, Math.random() * Math.PI, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                // Nuvens estáticas
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                for (let i = 0; i < 50; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 50 + 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (type === 'gas' || type === 'jupiter' || type === 'saturn' || type === 'uranus' || type === 'neptune') {
+                // Bandas atmosféricas
+                for (let y = 0; y < canvas.height; y += 8) {
+                    ctx.fillStyle = Math.random() > 0.5 ? colorBase : colorDetail;
+                    ctx.fillRect(0, y, canvas.width, Math.random() * 14 + 4);
+                }
+                // Tempestades e vórtices (ex: Grande Mancha Vermelha em Júpiter)
+                if (type === 'jupiter') {
+                    ctx.fillStyle = '#cc3300';
+                    ctx.beginPath();
+                    ctx.ellipse(700, 320, 60, 35, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            return texture;
+        }
+
+        // 5. O SOL
+        const sunGeometry = new THREE.SphereGeometry(14, 64, 64);
+        const sunMaterial = new THREE.MeshBasicMaterial({
+            map: createProceduralTexture('sun', '#ffcc00', '#ff3300')
+        });
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        sun.name = "Sol";
+        scene.add(sun);
+
+        // Brilho solar (Glow effect ao redor do sol)
+        const sunGlowGeo = new THREE.SphereGeometry(15.5, 32, 32);
+        const sunGlowMat = new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            transparent: true,
+            opacity: 0.25,
+            side: THREE.BackSide
+        });
+        const sunGlow = new THREE.Mesh(sunGlowGeo, sunGlowMat);
+        sun.add(sunGlow);
+
+        // 6. Dados dos Planetas
+        const planetsData = [
+            { name: 'Mercúrio', size: 1.3, dist: 26, speed: 0.035, rotSpeed: 0.005, colorBase: '#8c8c8c', colorDetail: '#595959', type: 'rocky' },
+            { name: 'Vênus',    size: 2.3, dist: 40, speed: 0.025, rotSpeed: 0.003, colorBase: '#e3bb76', colorDetail: '#b58b43', type: 'gas' },
+            { name: 'Terra',    size: 2.6, dist: 58, speed: 0.018, rotSpeed: 0.012, colorBase: '#1a66ff', colorDetail: '#002699', type: 'earth' },
+            { name: 'Marte',    size: 1.6, dist: 76, speed: 0.013, rotSpeed: 0.010, colorBase: '#c1440e', colorDetail: '#802b00', type: 'mars' },
+            { name: 'Júpiter',  size: 6.8, dist: 108, speed: 0.008, rotSpeed: 0.022, colorBase: '#d4a373', colorDetail: '#bc6c25', type: 'jupiter' },
+            { name: 'Saturno',  size: 5.6, dist: 148, speed: 0.006, rotSpeed: 0.019, colorBase: '#e5c158', colorDetail: '#b3922e', type: 'saturn', hasRings: true },
+            { name: 'Urano',    size: 3.8, dist: 192, speed: 0.004, rotSpeed: 0.014, colorBase: '#73c2fb', colorDetail: '#3399ff', type: 'uranus' },
+            { name: 'Netuno',   size: 3.6, dist: 232, speed: 0.003, rotSpeed: 0.015, colorBase: '#2a52be', colorDetail: '#103080', type: 'neptune' }
+        ];
+
+        const planetMeshes = [];
+        const planetGroups = {};
+
+        // Construção dos planetas, órbitas e anéis
+        planetsData.forEach(data => {
+            const orbitGroup = new THREE.Group();
+            scene.add(orbitGroup);
+            planetGroups[data.name] = orbitGroup;
+
+            const geometry = new THREE.SphereGeometry(data.size, 48, 48);
+            const material = new THREE.MeshStandardMaterial({
+                map: createProceduralTexture(data.type, data.colorBase, data.colorDetail),
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = data.dist;
+            mesh.name = data.name;
+            
+            orbitGroup.add(mesh);
+            planetMeshes.push(mesh);
+
+            // Anéis de Saturno
+            if (data.hasRings) {
+                const ringGeo = new THREE.RingGeometry(data.size + 1.5, data.size + 7, 64);
+                // Rotacionar geometria para ficar horizontal em relação ao plano orbital
+                ringGeo.rotateX(Math.PI / 2);
+                const ringMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xdfcd97,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.85,
+                    roughness: 0.5
+                });
+                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                mesh.add(ringMesh);
+            }
+
+            // Linha visual da órbita (anel sutil no espaço)
+            const orbitPoints = [];
+            const segments = 128;
+            for (let i = 0; i <= segments; i++) {
+                const theta = (i / segments) * Math.PI * 2;
+                orbitPoints.push(new THREE.Vector3(Math.cos(theta) * data.dist, 0, Math.sin(theta) * data.dist));
+            }
+            const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+            const orbitMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08 });
+            const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+            scene.add(orbitLine);
+        });
+
+        // 7. Campo de Estrelas de Fundo (Starfield 3D)
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 6000;
+        const starPositions = new Float32Array(starsCount * 3);
+        const starColors = new Float32Array(starsCount * 3);
+
+        for(let i = 0; i < starsCount * 3; i += 3) {
+            starPositions[i] = (Math.random() - 0.5) * 2000;
+            starPositions[i+1] = (Math.random() - 0.5) * 2000;
+            starPositions[i+2] = (Math.random() - 0.5) * 2000;
+
+            // Variação de tom de cor das estrelas (branco, azulado, amarelado)
+            const shade = Math.random();
+            if (shade > 0.8) {
+                starColors[i] = 1.0; starColors[i+1] = 0.85; starColors[i+2] = 0.6; // Amarelada
+            } else if (shade > 0.6) {
+                starColors[i] = 0.6; starColors[i+1] = 0.8; starColors[i+2] = 1.0;  // Azuis
+            } else {
+                starColors[i] = 1.0; starColors[i+1] = 1.0; starColors[i+2] = 1.0;  // Brancas
+            }
+        }
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        starsGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        
+        const starsMaterial = new THREE.PointsMaterial({
+            size: 1.2,
+            vertexColors: true,
+            sizeAttenuation: true
+        });
+        const starField = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starField);
+
+        // 8. Estado da Câmera e Foco
+        let targetObject = null;
+        let isFocused = false;
+        camera.position.set(0, 120, 260);
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        // HUD Helper
+        const hud = document.getElementById('focus-hud');
+        const hudText = document.getElementById('hud-text');
+
+        function showHud(name) {
+            hudText.innerText = `Focado em: ${name}`;
+            hud.style.opacity = '1';
+        }
+
+        // Função global de foco via menu
+        window.focusOn = function(name) {
+            if (name === 'Geral') {
+                targetObject = null;
+                isFocused = false;
+                smoothMoveCamera(0, 140, 280, 0, 0, 0);
+                hud.style.opacity = '0';
+            } else if (name === 'Sol') {
+                targetObject = sun;
+                isFocused = true;
+                showHud('Sol');
+            } else {
+                const found = planetMeshes.find(m => m.name === name);
+                if (found) {
+                    targetObject = found;
+                    isFocused = true;
+                    showHud(name);
+                }
+            }
+        };
+
+        function smoothMoveCamera(px, py, pz, tx, ty, tz) {
+            controls.target.set(tx, ty, tz);
+            camera.position.set(px, py, pz);
+            controls.update();
+        }
+
+        // 9. Sistema de Raycasting para Cliquabilidade dos Planetas na Tela 3D
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('click', (event) => {
+            // Ignorar cliques se o usuário clicar no menu lateral ou painel de instruções
+            if (event.target.tagName === 'BUTTON' || event.target.closest('#info') || event.target.closest('#menu')) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const targetsToCheck = [sun, ...planetMeshes];
+            const intersects = raycaster.intersectObjects(targetsToCheck, true);
+
+            if (intersects.length > 0) {
+                let hitObject = intersects[0].object;
+                // Se clicou em um anel ou filho, encontrar o pai/planeta principal
+                while (hitObject.parent && hitObject.parent !== scene && hitObject.parent.type === 'Mesh') {
+                    hitObject = hitObject.parent;
+                }
+                targetObject = hitObject;
+                isFocused = true;
+                showHud(targetObject.name);
+            }
+        });
+
+        // 10. Loop de Animação e Renderização (Game/Simulation Loop)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotação própria do Sol
+            sun.rotation.y += 0.001;
+
+            // Rotação orbital e translação dos planetas
+            planetsData.forEach(data => {
+                const group = planetGroups[data.name];
+                if (group && group.children.length > 0) {
+                    const mesh = group.children[0];
+                    group.rotation.y += data.speed * 0.6; // Ajuste de velocidade geral agradável
+                    mesh.rotation.y += data.rotSpeed;
+                }
+            });
+
+            // Lógica de perseguição de câmera suave (Lerp) para o objeto focado
+            if (isFocused && targetObject) {
+                const targetWorldPosition = new THREE.Vector3();
+                targetObject.getWorldPosition(targetWorldPosition);
+
+                // Calcular distância ideal proporcional ao tamanho do astro
+                const radius = targetObject.geometry ? (targetObject.geometry.parameters.radius || 3) : 5;
+                const offsetDistance = targetObject.name === 'Sol' ? 45 : radius * 4.5 + 4;
+                
+                const idealCameraPos = targetWorldPosition.clone().add(new THREE.Vector3(0, offsetDistance * 0.5, offsetDistance));
+                
+                camera.position.lerp(idealCameraPos, 0.04);
+                controls.target.lerp(targetWorldPosition, 0.04);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Responsividade a redimensionamento de janela
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Iniciar loop
+        animate();
+    </script>
+</body>
+</html>
